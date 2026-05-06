@@ -38,7 +38,7 @@ if (form) {
     if (errorEl) errorEl.hidden = true;
 
     try {
-      const res  = await fetch('contact.php', {
+      const res  = await fetch('contact_send.php', {
         method: 'POST',
         body: new FormData(form),
       });

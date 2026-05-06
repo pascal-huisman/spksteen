@@ -59,7 +59,7 @@ function cardClass(int $index, string $filename, string $imageDir): string {
     <ul class="nav__links">
       <li><a href="index.php" class="active">Portfolio</a></li>
       <li><a href="informatie.html">Speksteen</a></li>
-      <li><a href="contact.html">Contact</a></li>
+      <li><a href="contact.php">Contact</a></li>
     </ul>
     <button class="nav__toggle" aria-label="menu">&#9776;</button>
   </nav>
@@ -120,7 +120,7 @@ function cardClass(int $index, string $filename, string $imageDir): string {
     <div class="cta-banner__inner">
       <h2>Geïnteresseerd in een beeld?</h2>
       <p>Elk werk is uniek en te koop. Neem contact op voor beschikbaarheid en prijzen.</p>
-      <a href="contact.html" class="btn btn--light">Neem contact op</a>
+      <a href="contact.php" class="btn btn--light">Neem contact op</a>
     </div>
   </section>
 
@@ -131,7 +131,7 @@ function cardClass(int $index, string $filename, string $imageDir): string {
       <nav class="footer__nav">
         <a href="index.php">Portfolio</a>
         <a href="informatie.html">Speksteen</a>
-        <a href="contact.html">Contact</a>
+        <a href="contact.php">Contact</a>
       </nav>
       <span class="footer__copy">&copy; 2025 Dith – spekstenenbeelden.nl</span>
     </div>

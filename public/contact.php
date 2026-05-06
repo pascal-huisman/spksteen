@@ -1,87 +1,122 @@
 <?php
-declare(strict_types=1);
+require_once __DIR__ . '/settings.php';
+?>
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact – Dith Beeldend Kunstenaar Maassluis</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
 
-/**
- * contact.php — Verwerkt het contactformulier en stuurt notificatie via aims_notify
- *
- * aims_notify verwacht een POST naar /notify met:
- *   - api_key: jouw API key
- *   - template: naam van het template
- *   - variables: key-value pairs voor {{variable}} vervanging
- */
+  <nav class="nav">
+    <a href="index.php" class="nav__logo">Dith</a>
+    <ul class="nav__links">
+      <li><a href="index.php">Portfolio</a></li>
+      <li><a href="informatie.html">Speksteen</a></li>
+      <li><a href="contact.php" class="active">Contact</a></li>
+    </ul>
+    <button class="nav__toggle" aria-label="menu">&#9776;</button>
+  </nav>
 
-header('Content-Type: application/json');
+  <header class="page-hero">
+    <div class="page-hero__inner">
+      <span class="hero__eyebrow">Maassluis, Zuid-Holland</span>
+      <h1 class="page-hero__title">Neem <em>contact op</em></h1>
+    </div>
+  </header>
 
-// ── Configuratie ────────────────────────────────────────────────────────────
-$NOTIFY_URL     = getenv('NOTIFY_URL')     ?: 'http://aims_notify:80/notify';
-$NOTIFY_API_KEY = getenv('NOTIFY_API_KEY') ?: '';
-$NOTIFY_TEMPLATE = getenv('NOTIFY_TEMPLATE') ?: 'speksteen_contact';
+  <main class="contact-main">
+<?php if (!$contact_enabled): ?>
+    <div class="contact-unavailable">
+      <p class="contact-unavailable__msg">Contact is momenteel tijdelijk niet beschikbaar.<br>Kom later terug.</p>
+      <a href="index.php" class="btn">Terug naar portfolio</a>
+    </div>
+<?php else: ?>
+    <div class="contact-grid">
 
-// Alleen POST accepteren
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    http_response_code(405);
-    echo json_encode(['ok' => false, 'error' => 'Method not allowed']);
-    exit;
-}
+      <div class="contact-info">
+        <h2>Dith</h2>
+        <p class="contact-intro">
+          Geïnteresseerd in een beeld, een opdracht of een vraag over het werk?
+          Stuur gerust een bericht. Dith reageert zo snel mogelijk.
+        </p>
 
-// ── Input ophalen & valideren ───────────────────────────────────────────────
-$naam      = trim($_POST['naam']      ?? '');
-$email     = trim($_POST['email']     ?? '');
-$onderwerp = trim($_POST['onderwerp'] ?? '');
-$bericht   = trim($_POST['bericht']   ?? '');
+        <div class="contact-details">
+          <div class="contact-detail">
+            <span class="contact-detail__label">Locatie</span>
+            <span class="contact-detail__value">Maassluis, Zuid-Holland</span>
+          </div>
+          <div class="contact-detail">
+            <span class="contact-detail__label">Website</span>
+            <span class="contact-detail__value">spekstenenbeelden.nl</span>
+          </div>
+          <div class="contact-detail">
+            <span class="contact-detail__label">Bezichtiging</span>
+            <span class="contact-detail__value">Op afspraak mogelijk</span>
+          </div>
+        </div>
 
-$errors = [];
-if ($naam === '')                    $errors[] = 'Naam is verplicht';
-if (!filter_var($email, FILTER_VALIDATE_EMAIL)) $errors[] = 'Ongeldig e-mailadres';
-if ($bericht === '')                 $errors[] = 'Bericht is verplicht';
+        <div class="contact-stone-accent">
+          <div class="stone-chip stone-chip--green"></div>
+          <div class="stone-chip stone-chip--dark"></div>
+          <div class="stone-chip stone-chip--white"></div>
+        </div>
+      </div>
 
-if (!empty($errors)) {
-    http_response_code(422);
-    echo json_encode(['ok' => false, 'errors' => $errors]);
-    exit;
-}
+      <div class="contact-form-wrap">
+        <form class="contact-form" id="contactForm" novalidate>
+          <div class="form-group">
+            <label for="naam">Naam</label>
+            <input type="text" id="naam" name="naam" required placeholder="Uw naam">
+          </div>
+          <div class="form-group">
+            <label for="email">E-mailadres</label>
+            <input type="email" id="email" name="email" required placeholder="uw@email.nl">
+          </div>
+          <div class="form-group">
+            <label for="onderwerp">Onderwerp</label>
+            <select id="onderwerp" name="onderwerp">
+              <option value="">Kies een onderwerp</option>
+              <option value="aankoop">Aankoop / beschikbaarheid</option>
+              <option value="opdracht">Opdracht / maatwerk</option>
+              <option value="bezichtiging">Bezichtiging</option>
+              <option value="overig">Overig</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="bericht">Bericht</label>
+            <textarea id="bericht" name="bericht" rows="6" required placeholder="Uw bericht..."></textarea>
+          </div>
+          <button type="submit" class="btn btn--form">Verstuur bericht</button>
+          <div class="form-success" id="formSuccess" hidden>
+            <span>✓</span> Bedankt! Uw bericht is ontvangen. Dith neemt zo snel mogelijk contact met u op.
+          </div>
+          <div class="form-error" id="formError" hidden></div>
+        </form>
+      </div>
 
-// ── Notificatie versturen via aims_notify ───────────────────────────────────
-$payload = [
-    'api_key'   => $NOTIFY_API_KEY,
-    'template'  => $NOTIFY_TEMPLATE,
-    'variables' => [
-        'naam'      => $naam,
-        'email'     => $email,
-        'onderwerp' => $onderwerp ?: 'Geen onderwerp opgegeven',
-        'bericht'   => nl2br(htmlspecialchars($bericht)),
-        'datum'     => date('d-m-Y H:i'),
-        'ip'        => $_SERVER['REMOTE_ADDR'] ?? 'onbekend',
-    ],
-];
+    </div>
+<?php endif; ?>
+  </main>
 
-$ch = curl_init($NOTIFY_URL);
-curl_setopt_array($ch, [
-    CURLOPT_POST           => true,
-    CURLOPT_POSTFIELDS     => json_encode($payload),
-    CURLOPT_HTTPHEADER     => ['Content-Type: application/json'],
-    CURLOPT_RETURNTRANSFER => true,
-    CURLOPT_TIMEOUT        => 10,
-]);
+  <footer class="footer">
+    <div class="footer__inner">
+      <span class="footer__name">Dith · Beeldend kunstenaar</span>
+      <span class="footer__location">Maassluis, Zuid-Holland</span>
+      <nav class="footer__nav">
+        <a href="index.php">Portfolio</a>
+        <a href="informatie.html">Speksteen</a>
+        <a href="contact.php">Contact</a>
+      </nav>
+      <span class="footer__copy">&copy; 2025 Dith – spekstenenbeelden.nl</span>
+    </div>
+  </footer>
 
-$response   = curl_exec($ch);
-$httpStatus = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-$curlError  = curl_error($ch);
-curl_close($ch);
-
-// ── Resultaat teruggeven ────────────────────────────────────────────────────
-if ($curlError) {
-    error_log("[speksteen/contact] cURL fout: $curlError");
-    http_response_code(500);
-    echo json_encode(['ok' => false, 'error' => 'Kan notificatie niet versturen']);
-    exit;
-}
-
-if ($httpStatus < 200 || $httpStatus >= 300) {
-    error_log("[speksteen/contact] aims_notify HTTP $httpStatus: $response");
-    http_response_code(500);
-    echo json_encode(['ok' => false, 'error' => 'Notificatie mislukt', 'detail' => $response]);
-    exit;
-}
-
-echo json_encode(['ok' => true, 'message' => 'Bericht ontvangen']);
+  <script src="js/main.js"></script>
+</body>
+</html>
