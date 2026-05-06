@@ -1,0 +1,27 @@
+version: "3.9"
+
+services:
+  nginx:
+    build: .
+    container_name: speksteen_nginx
+    restart: unless-stopped
+    expose:
+      - "80"
+    volumes:
+      - ./public:/var/www/html   # live reload — foto's direct zichtbaar zonder rebuild
+    env_file:
+      - .env
+    environment:
+      - NOTIFY_URL=${NOTIFY_URL}
+      - NOTIFY_API_KEY=${NOTIFY_API_KEY}
+      - NOTIFY_TEMPLATE=${NOTIFY_TEMPLATE:-speksteen_contact}
+    labels:
+      - "traefik.enable=false"
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    external: true
+    driver: bridge
+

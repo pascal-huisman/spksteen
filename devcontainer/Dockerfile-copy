@@ -1,0 +1,28 @@
+FROM node:20-slim
+
+RUN apt-get update && apt-get install -y \
+    git \
+    curl \
+    ca-certificates \
+    unzip \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN npm install -g @anthropic-ai/claude-code
+
+# node gebruiker (uid 1000) bestaat al in deze image — hernoem naar claude
+RUN usermod -l claude -d /home/claude -m node \
+    && groupmod -n claude node
+
+# Zorg dat de .claude map correct eigendom is
+RUN mkdir -p /home/claude/.claude \
+    && chown -R claude:claude /home/claude
+
+WORKDIR /var/www/html
+RUN chown -R claude:claude /var/www/html
+
+USER claude
+
+ENV SHELL=/bin/bash
+ENV NODE_ENV=development
+
+CMD ["/bin/bash"]
